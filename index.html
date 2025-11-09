@@ -425,18 +425,9 @@
                 if (!text) return "";
                 let html = text.replace(/\n/g, '<br>');
                 
-                // [frac:num:den]
-                const fracRegex = /\[frac:([^:]+):([^\]]+)\]/g;
-                html = html.replace(fracRegex, (match, num, den) => {
-                    return `
-                        <div class="fraction">
-                            <span class="numerator">${num}</span>
-                            <span class="denominator">${den}</span>
-                        </div>
-                    `;
-                });
-
                 // [sup:val]
+                // MUST run sup and sqrt replacements *before* frac,
+                // so the HTML doesn't break the frac regex.
                 const supRegex = /\[sup:([^\]]+)\]/g;
                 html = html.replace(supRegex, (match, val) => `<sup>${val}</sup>`);
 
@@ -447,6 +438,18 @@
                         <div class="sqrt">
                             <span class="sqrt-symbol">&radic;</span>
                             <span class="sqrt-content">${val}</span>
+                        </div>
+                    `;
+                });
+                
+                // [frac:num:den]
+                // This must run *after* sup and sqrt.
+                const fracRegex = /\[frac:([^:]+):([^\]]+)\]/g;
+                html = html.replace(fracRegex, (match, num, den) => {
+                    return `
+                        <div class="fraction">
+                            <span class="numerator">${num}</span>
+                            <span class="denominator">${den}</span>
                         </div>
                     `;
                 });
