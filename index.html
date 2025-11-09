@@ -361,7 +361,7 @@
                     case 3: // Type: T = 2pi[sqrt:l]  [l] -> l1 = n3[sqrt:l2]  [l2]
                         text = `${l1} = ${n3}[sqrt:${l2}]   [${l2}]`;
                         correctAnswer = `${l2} = ([frac:${l1}:${n3}])[sup:2]`;
-                        distractors = [`${l2} = [frac:${l1}[sup:2]:${n3}]`, `${l2} = [frac:${l1}[sup:2]:${n3}[sup:2]]`, `l[sup:2] = ${l1} - ${n3}[sup:2]`];
+                        distractors = [`${l2} = [frac:${l1}[sup:2]:${n3}]`, `${l2} = [frac:${l1}[sup:2]:${n3}[sup:2]]`, `${l2} = ${l1} + ${n3}`]; // CHANGED THIS LINE
                         steps = `${l1} = ${n3}[sqrt:${l2}]\nDivide both sides by '${n3}':\n[frac:${l1}:${n3}] = [sqrt:${l2}]\nSquare both sides:\n([frac:${l1}:${n3}])[sup:2] = ${l2}\nAnswer: ${l2} = ([frac:${l1}:${n3}])[sup:2]`;
                         break;
                     
