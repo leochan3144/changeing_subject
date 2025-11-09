@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formula Rearrange Challenge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
+    <style>
+        /* Use Inter as the default font */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Use Roboto Mono for equations for better readability */
+        .font-mono {
+            font-family: 'Roboto Mono', monospace;
+        }
+        /* Custom class for the steps */
+        .steps-formatting {
+            font-family: 'Roboto Mono', monospace;
+            background-color: #f9fafb; /* bg-gray-50 */
+            padding: 1rem; /* p-4 */
+            border-radius: 0.5rem; /* rounded-lg */
+            border: 1px solid #e5e7eb; /* border-gray-200 */
+            line-height: 2.25; /* Increased line-height for fractions */
+        }
+        
+        /* CSS for rendering fractions */
+        .fraction {
+            display: inline-flex;
+            flex-direction: column;
+            vertical-align: middle;
+            text-align: center;
+            margin: 0 0.15em;
+            position: relative;
+        }
+        .numerator {
+            padding: 0 0.1em;
+            border-bottom: 2px solid currentColor;
+            line-height: 1;
+        }
+        .denominator {
+            padding: 0 0.1em;
+            line-height: 1;
+        }
+
+        /* CSS for square roots */
+        .sqrt {
+            display: inline-flex;
+            vertical-align: middle;
+            margin: 0 0.1em;
+        }
+        .sqrt-symbol {
+            font-size: 1.2em;
+            vertical-align: middle;
+            position: relative;
+            top: 0.1em;
+        }
+        .sqrt-content {
+            border-top: 2px solid currentColor;
+            padding: 0 0.2em;
+            line-height: 1;
+        }
+        
+        /* Adjust alignment for large text in question */
+        #question-display .fraction {
+            top: -0.3em;
+        }
+        /* Adjust alignment for text in steps and answers */
+        .steps-formatting .fraction,
+        #correct-answer-display .fraction,
+        .answer-btn .fraction {
+            top: -0.1em;
+            line-height: 1.1;
+        }
+        .steps-formatting .numerator,
+        #correct-answer-display .fraction .numerator,
+        .answer-btn .fraction .numerator {
+            border-bottom-width: 1px;
+        }
+        .steps-formatting .sqrt-content,
+        #correct-answer-display .sqrt-content,
+        .answer-btn .sqrt-content {
+            border-top-width: 1px;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center min-h-screen p-4">
+
+    <div id="welcome-container" class="bg-white p-6 sm:p-8 rounded-2xl shadow-xl w-full max-w-lg">
+        <h1 class="text-3xl font-bold text-center text-indigo-700 mb-2">Welcome!</h1>
+        <p class="text-center text-gray-600 mb-6">Enter your name to start the challenge.</p>
+        
+        <div class="mb-4">
+            <label for="name-input" class="block text-sm font-medium text-gray-700 mb-1">Your English Name:</label>
+            <input type="text" id="name-input" class="w-full text-xl font-mono p-3 border-2 border-gray-200 rounded-lg bg-white shadow-sm" placeholder="e.g. Alex Smith">
+        </div>
+        
+        <button id="start-game-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-lg text-lg shadow-md transition-transform transform hover:scale-105">
+            Start Game
+        </button>
+    </div>
+
+
+    <div id="main-game-container" class="bg-white p-6 sm:p-8 rounded-2xl shadow-xl w-full max-w-lg hidden">
+        
+        <div id="verification-code-display" class="font-mono text-sm text-gray-500 text-right -mt-2 mb-2"></div>
+
+        <h1 class="text-3xl font-bold text-center text-indigo-700 mb-2">Formula Rearrange Challenge</h1>
+        <p class="text-center text-gray-600 mb-6">Make the letter in brackets [ ] the subject!</p>
+
+        <div class="flex justify-between items-center mb-4">
+            <button id="change-level-btn" class="hidden text-sm text-indigo-600 hover:text-indigo-800 transition-colors">&larr; Change Level</button>
+            <div id="score-display" class="text-2xl font-bold text-indigo-700 w-full text-right">Score: 0</div>
+        </div>
+
+        <div id="level-selection">
+            <h2 class="text-xl font-semibold text-center text-gray-800 mb-4">Choose your level:</h2>
+            <div class="grid grid-cols-1 gap-4">
+                 <button data-level="1" class="level-btn bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-6 rounded-lg text-lg shadow-md transition-transform transform hover:scale-105">
+                    Level 1: One Step
+                </button>
+                <button data-level="2" class="level-btn bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-4 px-6 rounded-lg text-lg shadow-md transition-transform transform hover:scale-105">
+                     Level 2: Two Steps
+                </button>
+                <button data-level="3" class="level-btn bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-6 rounded-lg text-lg shadow-md transition-transform transform hover:scale-105">
+                    Level 3: Fractions & Powers
+                </button>
+             </div>
+        </div>
+
+        <div id="game-board" class="hidden">
+            <div class="bg-gray-100 p-6 rounded-lg mb-6 shadow-inner min-h-[8rem] flex items-center justify-center">
+                <div id="question-display" class="text-3xl font-mono text-center text-gray-900 break-words">
+                     </div>
+            </div>
+
+             <div id="answer-options" class="grid grid-cols-1 gap-3">
+                </div>
+        </div>
+    </div>
+
+    <div id="feedback-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 hidden transition-opacity duration-300">
+        <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+             <div class="text-center mb-6">
+                <div id="feedback-icon" class="text-7xl mb-4"></div>
+                <h2 id="feedback-message" class="text-4xl font-bold"></h2>
+            </div>
+            
+            <div class="mb-6">
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">Detailed Steps:</h3>
+                <div id="feedback-steps" class="steps-formatting text-sm sm:text-base">
+                    </div>
+             </div>
+
+            <div class="grid grid-cols-1 gap-4 mb-8">
+                <div class="text-center bg-red-50 p-4 rounded-lg border border-red-200">
+                    <div class="text-sm font-semibold text-red-700 mb-1">Your Answer</div>
+                     <div id="user-answer-display" class="text-2xl font-mono font-bold text-red-600 break-words">
+                        </div>
+                </div>
+                <div class="text-center bg-green-50 p-4 rounded-lg border border-green-200">
+                    <div class="text-sm font-semibold text-green-700 mb-1">Correct Answer</div>
+                    <div id="correct-answer-display" class="text-2xl font-mono font-bold text-green-600">
+                        </div>
+                 </div>
+            </div>
+            
+            <button id="next-question-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-6 rounded-lg text-lg shadow-md transition-transform transform hover:scale-105">
+                Next Question
+            </button>
+         </div>
+    </div>
+
+    <audio id="correct-sound" src="sounds/cheerful-correct.mp3" preload="auto"></audio>
+    <audio id="incorrect-sound" src="sounds/simple-incorrect.mp3" preload="auto"></audio>
+    <audio id="click-sound" src="sounds/calculator-click.mp3" preload="auto"></audio>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- STATE VARIABLES ---
+            let scores = { 1: 0, 2: 0, 3: 0 };
+            let currentLevel = 1;
+            let currentScore = 0; // This will hold the score for the *active* level
+            let currentEquation = null;
+            // 'currentInput' is no longer needed
+            let userName = "";
+            let verificationCode = "";
+
+            // --- HELPER FUNCTIONS ---
+
+            /**
+             * Generates verification code from name.
+             */
+            function generateVerificationCode(name) {
+                const words = name.toLowerCase().split(' ');
+                const wordSums = words.map(word => {
+                    let sum = 0;
+                    for (const char of word) {
+                        const charCode = char.charCodeAt(0);
+                        if (charCode >= 97 && charCode <= 122) {
+                            sum += charCode - 96;
+                        }
+                    }
+                    return sum;
+                });
+                return wordSums.filter(sum => sum > 0).join(',');
+            }
+            
+            /**
+             * Returns a random integer between min (inclusive) and max (inclusive).
+             */
+            function randInt(min, max) {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+
+            // --- NEW FORMULA GENERATORS ---
+
+            function generateLevel1() {
+                const type = randInt(1, 4);
+                let text, correctAnswer, distractors, steps;
+
+                switch (type) {
+                    case 1: // v = u + a  [a]
+                        text = "v = u + a   [a]";
+                        correctAnswer = "a = v - u";
+                        distractors = ["a = v + u", "a = u - v"];
+                        steps = "v = u + a\nSubtract 'u' from both sides:\nv - u = a\nAnswer: a = v - u";
+                        break;
+
+                    case 2: // y = x - c  [x]
+                        text = "y = x - c   [x]";
+                        correctAnswer = "x = y + c";
+                        distractors = ["x = y - c", "x = c - y"];
+                        steps = "y = x - c\nAdd 'c' to both sides:\ny + c = x\nAnswer: x = y + c";
+                        break;
+                    
+                    case 3: // A = lw  [w]
+                        text = "A = lw   [w]";
+                        correctAnswer = "w = [frac:A:l]";
+                        distractors = ["w = Al", "w = [frac:l:A]"];
+                        steps = "A = lw\nDivide both sides by 'l':\n[frac:A:l] = w\nAnswer: w = [frac:A:l]";
+                        break;
+                    
+                    case 4: // y = [frac:x:a]  [x]
+                        text = "y = [frac:x:a]   [x]";
+                        correctAnswer = "x = ya";
+                        distractors = ["x = [frac:y:a]", "x = [frac:a:y]"];
+                        steps = "y = [frac:x:a]\nMultiply both sides by 'a':\nya = x\nAnswer: x = ya";
+                        break;
+                }
+                
+                return { text, correctAnswer, distractors, steps };
+            }
+
+            function generateLevel2() {
+                const type = randInt(1, 4);
+                let text, correctAnswer, distractors, steps;
+
+                switch (type) {
+                    case 1: // y = mx + c  [x]
+                        text = "y = mx + c   [x]";
+                        correctAnswer = "x = [frac:y - c:m]";
+                        distractors = ["x = [frac:y + c:m]", "x = [frac:y - m:c]"];
+                        steps = "y = mx + c\nSubtract 'c' from both sides:\ny - c = mx\nDivide both sides by 'm':\n[frac:y - c:m] = x\nAnswer: x = [frac:y - c:m]";
+                        break;
+
+                    case 2: // v = u + at  [t]
+                        text = "v = u + at   [t]";
+                        correctAnswer = "t = [frac:v - u:a]";
+                        distractors = ["t = [frac:v + u:a]", "t = a(v - u)"];
+                        steps = "v = u + at\nSubtract 'u' from both sides:\nv - u = at\nDivide both sides by 'a':\n[frac:v - u:a] = t\nAnswer: t = [frac:v - u:a]";
+                        break;
+                    
+                    case 3: // P = 2l + 2w  [w]
+                        text = "P = 2l + 2w   [w]";
+                        correctAnswer = "w = [frac:P - 2l:2]";
+                        distractors = ["w = [frac:P + 2l:2]", "w = 2(P - 2l)"];
+                        steps = "P = 2l + 2w\nSubtract '2l' from both sides:\nP - 2l = 2w\nDivide both sides by '2':\n[frac:P - 2l:2] = w\nAnswer: w = [frac:P - 2l:2]";
+                        break;
+                    
+                    case 4: // P = 2(l + w)  [l]
+                        text = "P = 2(l + w)   [l]";
+                        correctAnswer = "l = [frac:P:2] - w";
+                        distractors = ["l = [frac:P:2] + w", "l = 2P - w", "l = P - 2w"];
+                        steps = "P = 2(l + w)\nDivide both sides by '2':\n[frac:P:2] = l + w\nSubtract 'w' from both sides:\n[frac:P:2] - w = l\nAnswer: l = [frac:P:2] - w";
+                        break;
+                }
+                return { text, correctAnswer, distractors, steps };
+            }
+
+            function generateLevel3() {
+                const type = randInt(1, 4);
+                let text, correctAnswer, distractors, steps;
+
+                switch (type) {
+                    case 1: // A = [frac:1:2]bh  [h]
+                        text = "A = [frac:1:2]bh   [h]";
+                        correctAnswer = "h = [frac:2A:b]";
+                        distractors = ["h = [frac:A:2b]", "h = [frac:b:2A]", "h = 2Ab"];
+                        steps = "A = [frac:1:2]bh\nMultiply both sides by '2':\n2A = bh\nDivide both sides by 'b':\n[frac:2A:b] = h\nAnswer: h = [frac:2A:b]";
+                        break;
+                    
+                    case 2: // v^2 = u^2 + 2as  [s]
+                        text = "v[sup:2] = u[sup:2] + 2as   [s]";
+                        correctAnswer = "s = [frac:v[sup:2] - u[sup:2]:2a]";
+                        distractors = ["s = [frac:v[sup:2] + u[sup:2]:2a]", "s = [frac:v[sup:2] - u[sup:2]:a]"];
+                        steps = "v[sup:2] = u[sup:2] + 2as\nSubtract u[sup:2] from both sides:\nv[sup:2] - u[sup:2] = 2as\nDivide both sides by 2a:\n[frac:v[sup:2] - u[sup:2]:2a] = s\nAnswer: s = [frac:v[sup:2] - u[sup:2]:2a]";
+                        break;
+
+                    case 3: // T = 2\u03C0[sqrt:l]  [l] (Using \u03C0 for π)
+                        text = "T = 2\u03C0[sqrt:l]   [l]";
+                        correctAnswer = "l = ([frac:T:2\u03C0])[sup:2]";
+                        distractors = ["l = [frac:T[sup:2]:2\u03C0]", "l = (T - 2\u03C0)[sup:2]", "l = [sqrt:[frac:T:2\u03C0]]"];
+                        steps = "T = 2\u03C0[sqrt:l]\nDivide both sides by 2\u03C0:\n[frac:T:2\u03C0] = [sqrt:l]\nSquare both sides:\n([frac:T:2\u03C0])[sup:2] = l\nAnswer: l = ([frac:T:2\u03C0])[sup:2]";
+                        break;
+                    
+                    case 4: // A = P(1 + r)  [r]
+                        text = "A = P(1 + r)   [r]";
+                        correctAnswer = "r = [frac:A:P] - 1";
+                        distractors = ["r = [frac:A - 1:P]", "r = [frac:A:P] + 1", "r = A - P"];
+                        steps = "A = P(1 + r)\nDivide both sides by P:\n[frac:A:P] = 1 + r\nSubtract 1 from both sides:\n[frac:A:P] - 1 = r\nAnswer: r = [frac:A:P] - 1";
+                        break;
+                }
+                return { text, correctAnswer, distractors, steps };
+            }
+
+            /**
+             * Main function to generate an equation based on level.
+             */
+            function generateEquation(level) {
+                const numericLevel = parseInt(level, 10);
+                switch (numericLevel) {
+                    case 1: return generateLevel1();
+                    case 2: return generateLevel2();
+                    case 3: return generateLevel3();
+                    default: return generateLevel1();
+                }
+            }
+ 
+            // --- DOM ELEMENTS ---
+            const welcomeContainer = document.getElementById('welcome-container');
+            const mainGameContainer = document.getElementById('main-game-container');
+            const nameInput = document.getElementById('name-input');
+            const startGameBtn = document.getElementById('start-game-btn');
+            const verificationCodeDisplay = document.getElementById('verification-code-display');
+
+            const scoreDisplay = document.getElementById('score-display');
+            const levelSelection = document.getElementById('level-selection');
+            const gameBoard = document.getElementById('game-board');
+            const questionDisplay = document.getElementById('question-display');
+            const answerOptions = document.getElementById('answer-options'); // New
+            const changeLevelBtn = document.getElementById('change-level-btn');
+            
+            const modal = document.getElementById('feedback-modal');
+            const feedbackIcon = document.getElementById('feedback-icon');
+            const feedbackMessage = document.getElementById('feedback-message');
+            const feedbackSteps = document.getElementById('feedback-steps');
+            const userAnswerDisplay = document.getElementById('user-answer-display');
+            const correctAnswerDisplay = document.getElementById('correct-answer-display');
+            const nextQuestionBtn = document.getElementById('next-question-btn');
+
+            const correctSound = document.getElementById('correct-sound');
+            const incorrectSound = document.getElementById('incorrect-sound');
+            const clickSound = document.getElementById('click-sound');
+
+
+            // --- FUNCTIONS ---
+
+            /**
+             * Renders a string with custom tags into HTML.
+             * Handles: [frac:num:den], [sup:val], [sqrt:val], \n
+             */
+            function renderEquation(text) {
+                if (!text) return "";
+                let html = text.replace(/\n/g, '<br>');
+                
+                // [frac:num:den]
+                const fracRegex = /\[frac:([^:]+):([^\]]+)\]/g;
+                html = html.replace(fracRegex, (match, num, den) => {
+                    return `
+                        <div class="fraction">
+                            <span class="numerator">${num}</span>
+                            <span class="denominator">${den}</span>
+                        </div>
+                    `;
+                });
+
+                // [sup:val]
+                const supRegex = /\[sup:([^\]]+)\]/g;
+                html = html.replace(supRegex, (match, val) => `<sup>${val}</sup>`);
+
+                // [sqrt:val]
+                const sqrtRegex = /\[sqrt:([^\]]+)\]/g;
+                html = html.replace(sqrtRegex, (match, val) => {
+                    return `
+                        <div class="sqrt">
+                            <span class="sqrt-symbol">&radic;</span>
+                            <span class="sqrt-content">${val}</span>
+                        </div>
+                    `;
+                });
+
+                return html;
+            }
+
+            function updateScoreDisplayAllLevels() {
+                scoreDisplay.innerHTML = `
+                    <span class="text-lg font-bold text-green-600">L1: ${scores[1]}</span>
+                    <span class="text-lg font-bold text-yellow-600 ml-3">L2: ${scores[2]}</span>
+                    <span class="text-lg font-bold text-red-600 ml-3">L3: ${scores[3]}</span>
+                `;
+            }
+            updateScoreDisplayAllLevels();
+
+            function selectLevel(level) {
+                currentLevel = level;
+                currentScore = scores[currentLevel];
+                updateScoreDisplay();
+                levelSelection.classList.add('hidden');
+                gameBoard.classList.remove('hidden');
+                changeLevelBtn.classList.remove('hidden');
+                loadNewQuestion();
+            }
+
+            function showLevelSelection() {
+                gameBoard.classList.add('hidden');
+                changeLevelBtn.classList.add('hidden');
+                levelSelection.classList.remove('hidden');
+                updateScoreDisplayAllLevels();
+            }
+
+            function loadNewQuestion() {
+                currentEquation = generateEquation(currentLevel);
+                questionDisplay.innerHTML = renderEquation(currentEquation.text);
+                
+                // --- NEW: Populate Answer Options ---
+                answerOptions.innerHTML = ''; // Clear old options
+                const options = [...currentEquation.distractors, currentEquation.correctAnswer];
+                
+                // Shuffle the options array
+                options.sort(() => Math.random() - 0.5);
+                
+                options.forEach(option => {
+                    const button = document.createElement('button');
+                    // Apply styles
+                    button.className = 'answer-btn bg-white text-gray-800 border-b-4 border-gray-200 hover:bg-gray-50 text-2xl font-mono font-semibold py-4 px-2 rounded-lg shadow-md transition-all duration-150 transform active:scale-95';
+                    button.innerHTML = renderEquation(option); // Render formula in button
+                    button.dataset.value = option; // Store the raw string for checking
+                    answerOptions.appendChild(button);
+                });
+            }
+
+            function updateScoreDisplay() {
+                scores[currentLevel] = currentScore;
+                scoreDisplay.innerHTML = `<span class="text-2xl font-bold text-indigo-700">Level ${currentLevel} Score: ${currentScore}</span>`;
+            }
+
+            // 'handleInput' function is removed
+
+            // Check the user's answer (modified for string comparison)
+            function checkAnswer(userAnswer) {
+                const correctAnswer = currentEquation.correctAnswer;
+                
+                const isCorrect = (userAnswer === correctAnswer);
+
+                if (isCorrect) {
+                    currentScore++;
+                    correctSound.play();
+                    showFeedback(true, userAnswer);
+                } else {
+                    currentScore = Math.max(0, currentScore - 1);
+                    incorrectSound.play();
+                    showFeedback(false, userAnswer);
+                }
+                updateScoreDisplay();
+            }
+
+            function showFeedback(isCorrect, userAnswer) {
+                if (isCorrect) {
+                    feedbackIcon.textContent = "👍";
+                    feedbackMessage.textContent = "Correct!";
+                    feedbackMessage.className = "text-4xl font-bold text-green-600";
+                } else {
+                    feedbackIcon.textContent = "😢";
+                    feedbackMessage.textContent = "Incorrect!";
+                    feedbackMessage.className = "text-4xl font-bold text-red-600";
+                }
+
+                feedbackSteps.innerHTML = renderEquation(currentEquation.steps);
+                userAnswerDisplay.innerHTML = renderEquation(userAnswer) || "N/A";
+                correctAnswerDisplay.innerHTML = renderEquation(currentEquation.correctAnswer);
+                
+                modal.classList.remove('hidden');
+            }
+
+            function nextQuestion() {
+                modal.classList.add('hidden');
+                loadNewQuestion();
+            }
+
+            // --- EVENT LISTENERS ---
+
+            startGameBtn.addEventListener('click', () => {
+                userName = nameInput.value.trim();
+                if (userName === "") {
+                    alert("Please enter your name!");
+                    return;
+                }
+                
+                verificationCode = generateVerificationCode(userName);
+                verificationCodeDisplay.textContent = `Code: ${verificationCode}`;
+                
+                welcomeContainer.classList.add('hidden');
+                mainGameContainer.classList.remove('hidden');
+            });
+
+            levelSelection.addEventListener('click', (e) => {
+                if (e.target.classList.contains('level-btn')) {
+                    const level = e.target.dataset.level;
+                    selectLevel(level);
+                }
+            });
+
+            changeLevelBtn.addEventListener('click', showLevelSelection);
+
+            // NEW: Listener for answer options
+            answerOptions.addEventListener('click', (e) => {
+                const clickedButton = e.target.closest('.answer-btn');
+                if (clickedButton) {
+                    clickSound.currentTime = 0;
+                    clickSound.play();
+                    const userAnswer = clickedButton.dataset.value;
+                    checkAnswer(userAnswer);
+                }
+            });
+
+            nextQuestionBtn.addEventListener('click', nextQuestion);
+
+        });
+    </script>
+</body>
+</html>
